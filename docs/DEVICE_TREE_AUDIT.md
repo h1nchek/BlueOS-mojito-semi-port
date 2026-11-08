@@ -24,6 +24,14 @@ A public Android 15 device tree exists:
 
 The tree contains BoardConfig.mk, device.mk, AndroidProducts.mk, overlays, init configuration and a proprietary-files manifest. It is a useful Android 15 starting point, **not a ready Android 17 tree**.
 
+### Kernel and vendor leads (not yet validated)
+
+GitHub search also found:
+- Kernel candidate: https://github.com/ximi-mojito/android_kernel_xiaomi_mojito, branch `17.0`.
+- Vendor candidate: https://github.com/romgharti/vendor_xiaomi_mojito, branch `fourteen`.
+
+These are leads only. The branch names do not prove that the kernel builds with LineageOS 24.0 or that the vendor blobs match the phone's installed firmware. Before adding them to a build manifest, inspect their commit history, defconfig, kernel version, blob source fingerprint and common-tree dependencies.
+
 ### Shared common tree
 
 A LineageOS shared common tree exists on the Android 17 / LineageOS 24.0 branch:
