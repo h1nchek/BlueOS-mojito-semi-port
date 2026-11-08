@@ -1,106 +1,89 @@
 # Recovery ZIP preparation
 
-**Status: not flashable yet.**
+**Current package status: diagnostic only — not a ROM installer.**
 
-This directory documents the planned TWRP package for the Redmi Note 10
-(\`mojito\` / \`sunny\`). It intentionally contains no flashing installer.
+This project is investigating a BlueOS Android 17 GSI on the Redmi Note 10
+(`mojito` / `sunny`). The repository does not yet contain a supported
+installation procedure.
 
-## Why there is no installable ZIP yet
+## Why there is no installable ZIP
 
-The upstream BlueOS image is a generic Android 17 GSI, not a native
-\`mojito\` build. The upstream guide does not provide a TWRP installation
-procedure for this phone. Previous in-place GSI attempts on this device
-returned to Fastboot, and the cause has not been established.
+The upstream BlueOS image is a generic GSI, not a native `mojito` build.
+The upstream guide does not provide a TWRP installation procedure for this
+phone. Previous in-place GSI attempts returned to Fastboot, and the cause
+has not been established.
 
-Wrapping the same image in a ZIP would not fix compatibility or boot issues.
-A recovery installer must not guess partition names, slot handling, image
-format, or required wipe steps.
+Wrapping the same image in a ZIP cannot fix compatibility or boot issues.
+An installer must not guess partition names, slot handling, image format,
+or required wipe steps.
 
-## Offline preparation
+## Offline image preparation
 
-On Windows, prepare and validate the downloaded upstream payload:
+On Windows, prepare the downloaded upstream payload:
 
-\`\`\`powershell
-powershell -ExecutionPolicy Bypass -File .\\tools\\prepare_payload.ps1 -SourceGz "C:\\path\\to\\BlueOS-0.8.1-gsi_arm64_bvN4-20261107-2.img.gz"
-\`\`\`
+```powershell
+powershell -ExecutionPolicy Bypass -File .\tools\prepare_payload.ps1 -SourceGz "C:\path\to\BlueOS-0.8.1-gsi_arm64_bvN4-20261107-2.img.gz"
+```
 
-The script:
-- accepts only the documented archive filename;
-- decompresses the GZIP archive;
-- checks that the resulting image is exactly 3,512,172,544 bytes;
-- calculates SHA-256 hashes for local records;
-- does not write to the phone.
+The script decompresses the archive, checks the documented expanded size,
+and calculates local hashes. A locally calculated hash does not prove
+authenticity unless it is compared with a checksum published upstream.
 
-The displayed hashes are not proof of authenticity unless compared with a
-checksum published by the upstream project.
+Run the local image preflight:
 
-## Required checks before implementing flashing
+```powershell
+powershell -ExecutionPolicy Bypass -File .\tools\check_image_compatibility.ps1 -ImagePath "C:\path\to\BlueOS.img"
+```
 
-1. Confirm the exact TWRP build and recovery environment.
-2. Read the live partition and slot layout from recovery.
-3. Determine whether the target logical partition can hold the image.
-4. Verify the image format and the exact supported write method.
-5. Define rollback and recovery steps that do not depend on guessing.
-6. Review the final installer script before any write operation.
+This checks local file metadata only. It does not establish boot
+compatibility or permission to install.
 
-Until those checks are complete, do not add commands that flash \`system\`,
-modify \`vbmeta\`, delete logical partitions, or format \`/data\`.
+## Diagnostic recovery ZIP
+
+Build the read-only diagnostic package from the repository root:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\tools\build_preview_zip.ps1
+powershell -ExecutionPolicy Bypass -File .\tools\test_preview_zip.ps1
+```
+
+Output:
+`build/BlueOS-mojito-PREVIEW-NOT-FLASHABLE.zip`
+
+The archive uses conventional recovery-root paths:
+- `META-INF/com/google/android/update-binary`
+- `META-INF/com/google/android/updater-script`
+- `PACKAGE-STATUS.txt`
+- `README.txt`
+
+The entrypoint gathers recovery properties, block-device links, mapper
+entries, and available inspection tools. It writes its report to
+`/tmp/blueos-recovery-report.txt`. It does not install BlueOS or modify
+partitions.
+
+After running the diagnostic package in TWRP, retrieve the report over ADB:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\tools\pull_recovery_report.ps1
+```
+
+The ZIP test checks archive layout and selected safety markers. It does not
+emulate TWRP, prove that the recovery can run the script, or establish
+device compatibility.
+
+## Requirements before any installer work
+
+1. Confirm the exact recovery build and environment.
+2. Obtain the live partition and slot layout from recovery.
+3. Determine actual logical partition sizes and available free space.
+4. Verify the image format and supported write method.
+5. Establish a tested rollback and recovery path.
+6. Review the complete installer and its effects before any write operation.
+
+Until those checks are complete, do not add commands that write `system`,
+modify `vbmeta`, delete logical partitions, or format `/data`.
 
 ## Upstream
 
 - BlueOS: https://github.com/GDmio/BlueOS
 - Upstream GSI guide: https://github.com/GDmio/BlueOS/blob/main/GSI.md
-
-
-## Recovery ZIP layout preview
-
-The \`recovery/\` directory now contains the planned Android recovery ZIP
-metadata layout. Its \`update-binary\` is an **abort-only guard**: it prints
-that the package is not installable and exits before any device operation.
-
-Build a layout-preview ZIP on Windows from the repository root:
-
-\`\`\`powershell
-powershell -ExecutionPolicy Bypass -File .\\tools\\build_preview_zip.ps1
-\`\`\`
-
-Output:
-\`build/BlueOS-mojito-PREVIEW-NOT-FLASHABLE.zip\`
-
-**Do not treat this preview as a ROM installer.** It contains no GSI image,
-does not write partitions, and is expected to fail installation deliberately.
-The Android OTA package format uses an executable
-\`META-INF/com/google/android/update-binary\`; see the
-[Android Open Source Project package description](https://source.android.com/docs/core/ota/nonab/inside_packages).
-
-
-Validate the generated preview archive:
-
-\`\`\`powershell
-powershell -ExecutionPolicy Bypass -File .\\tools\\test_preview_zip.ps1
-\`\`\`
-
-The test checks the required ZIP entries, confirms that no image payload is
-bundled, and verifies that the recovery entrypoint is marked to abort. It
-does not emulate TWRP or prove device compatibility.
-
-
-## Current diagnostic ZIP
-
-The ZIP is a read-only TWRP diagnostic, not a ROM installer. It records
-recovery properties, block-device links, mapper entries, and available
-inspection tools in `/tmp/blueos-recovery-report.txt`. It does not modify
-partitions or install the GSI.
-
-Build and validate from the repository root:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\\tools\\build_preview_zip.ps1
-powershell -ExecutionPolicy Bypass -File .\\tools\\test_preview_zip.ps1
-```
-
-After running the diagnostic ZIP in TWRP, retrieve the report over ADB:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\\tools\\pull_recovery_report.ps1
-```
