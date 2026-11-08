@@ -1,0 +1,10 @@
+BlueOS mojito recovery package
+STATUS: PREVIEW ONLY - NOT FLASHABLE
+
+This package skeleton is for checking ZIP layout only.
+It contains no system image and performs no installation.
+The recovery entrypoint intentionally exits with an error.
+
+Target under investigation: Redmi Note 10 (mojito / sunny)
+Upstream payload: BlueOS Android 17 GSI
+Compatibility: unverified
