@@ -63,4 +63,4 @@ finally {
 }
 
 Write-Host "Created preview ZIP: $outputPath"
-Write-Host "This package intentionally aborts in recovery and does not flash anything."
+Write-Host "This package runs read-only recovery diagnostics only; it does not install BlueOS."
