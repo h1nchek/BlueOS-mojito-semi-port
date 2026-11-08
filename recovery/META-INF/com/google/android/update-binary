@@ -1,11 +1,39 @@
 #!/sbin/sh
-# BlueOS mojito: preview package only.
-# This entrypoint intentionally performs NO device modifications.
+# BlueOS mojito: READ-ONLY RECOVERY DIAGNOSTIC.
+# This is NOT an installer. No partitions are modified.
 
-echo " "
-echo "BlueOS for mojito - PREVIEW PACKAGE"
-echo "This ZIP is NOT an installer."
-echo "No partitions will be changed."
-echo "Recovery layout and device compatibility are not verified yet."
-echo " "
-exit 1
+OUT="/tmp/blueos-recovery-report.txt"
+
+{
+  echo "BlueOS recovery diagnostic"
+  echo "=========================="
+  echo "Date: $(date 2>/dev/null)"
+  echo
+  echo "[Recovery / device properties]"
+  for key in ro.twrp.version ro.product.device ro.product.name ro.boot.slot_suffix ro.boot.dynamic_partitions ro.boot.hardware ro.build.version.release; do
+    printf "%s=%s\n" "$key" "$(getprop "$key" 2>/dev/null)"
+  done
+  echo
+  echo "[Block devices by-name]"
+  if [ -d /dev/block/by-name ]; then ls -l /dev/block/by-name 2>&1; else echo "missing"; fi
+  echo
+  echo "[Logical mapper devices]"
+  if [ -d /dev/block/mapper ]; then ls -l /dev/block/mapper 2>&1; else echo "missing"; fi
+  echo
+  echo "[Inspection tools]"
+  for tool in lpdump lpunpack sgdisk parted blockdev; do
+    if command -v "$tool" >/dev/null 2>&1; then
+      printf "%s: %s\n" "$tool" "$(command -v "$tool")"
+    else
+      printf "%s: not found\n" "$tool"
+    fi
+  done
+  echo
+  echo "END OF REPORT"
+} > "$OUT" 2>&1
+
+cat "$OUT"
+echo
+echo "Report saved at $OUT"
+echo "DIAGNOSTIC ONLY — no BlueOS installation was performed."
+exit 0
