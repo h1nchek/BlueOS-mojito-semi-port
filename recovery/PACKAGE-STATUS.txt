@@ -1,9 +1,11 @@
 BlueOS mojito recovery package
-STATUS: PREVIEW ONLY - NOT FLASHABLE
+STATUS: DIAGNOSTIC ONLY - NOT A ROM INSTALLER
 
-This package skeleton is for checking ZIP layout only.
-It contains no system image and performs no installation.
-The recovery entrypoint intentionally exits with an error.
+This ZIP runs read-only TWRP diagnostics and writes:
+  /tmp/blueos-recovery-report.txt
+
+It does not contain a system image and does not install BlueOS.
+It does not write, erase, format, resize, or delete device partitions.
 
 Target under investigation: Redmi Note 10 (mojito / sunny)
 Upstream payload: BlueOS Android 17 GSI
