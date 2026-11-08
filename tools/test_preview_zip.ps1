@@ -4,7 +4,6 @@ param(
 
 $ErrorActionPreference = "Stop"
 Add-Type -AssemblyName System.IO.Compression
-Add-Type -AssemblyName System.IO.Compression.FileSystem
 
 $resolved = (Resolve-Path -LiteralPath $ZipPath).Path
 $archive = [System.IO.Compression.ZipFile]::OpenRead($resolved)
@@ -24,6 +23,10 @@ try {
         }
     }
 
+    if ($names -match '^recovery/' -or $names -contains "installer/README.md") {
+        throw "Repository source paths leaked into the ZIP; entries must be mapped to recovery-root paths."
+    }
+
     $forbiddenPayloads = @($names | Where-Object {
         $_ -match '(^|/)(system|system_a|system_b|payload)\.(img|bin)$' -or
         $_ -match '\.(img|img\.gz|zip)$'
@@ -33,6 +36,11 @@ try {
     }
 
     $entry = $archive.GetEntry("META-INF/com/google/android/update-binary")
+    $unixMode = ([uint32]$entry.ExternalAttributes) -shr 16
+    if (($unixMode -band 0xF000) -ne 0x8000 -or ($unixMode -band 0x1FF) -ne 0x1ED) {
+        throw ("update-binary does not have Unix regular-file mode 0755 (mode: 0x{0:X4})." -f $unixMode)
+    }
+
     $reader = [System.IO.StreamReader]::new($entry.Open())
     try { $binaryText = $reader.ReadToEnd() }
     finally { $reader.Dispose() }
@@ -53,10 +61,19 @@ try {
         throw "Package status marker is missing."
     }
 
-    Write-Host "PASS: required ZIP entries are present."
-    Write-Host "PASS: no image or nested ZIP payload is included."
-    Write-Host "PASS: recovery entrypoint is a read-only diagnostic."
-    Write-Host "PASS: package is clearly marked as diagnostic-only, not flashable."
+    $readmeEntry = $archive.GetEntry("README.txt")
+    $readmeReader = [System.IO.StreamReader]::new($readmeEntry.Open())
+    try { $readmeText = $readmeReader.ReadToEnd() }
+    finally { $readmeReader.Dispose() }
+
+    if ($readmeText -notmatch 'diagnostic only' -or $readmeText -notmatch 'not a ROM installer') {
+        throw "README.txt does not clearly identify the package as diagnostic-only."
+    }
+
+    Write-Host "PASS: required recovery-root ZIP entries are present."
+    Write-Host "PASS: no repository-only path prefixes or image payloads are included."
+    Write-Host "PASS: update-binary has Unix mode 0755."
+    Write-Host "PASS: recovery entrypoint and package status are diagnostic-only."
 }
 finally {
     $archive.Dispose()
