@@ -42,7 +42,7 @@ try {
             $entry = $archive.CreateEntry($entryName, [System.IO.Compression.CompressionLevel]::Optimal)
             if ($entryName.EndsWith("/update-binary")) {
                 # Unix regular file with executable permissions (0755).
-                $entry.ExternalAttributes = (0x81ED -shl 16)
+                $entry.ExternalAttributes = -2115174400
             }
             $entryStream = $entry.Open()
             try {
