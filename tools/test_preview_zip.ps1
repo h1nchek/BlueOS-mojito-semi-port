@@ -49,7 +49,7 @@ try {
     try { $statusText = $statusReader.ReadToEnd() }
     finally { $statusReader.Dispose() }
 
-    if ($statusText -notmatch 'PREVIEW ONLY - NOT FLASHABLE') {
+    if ($statusText -notmatch 'DIAGNOSTIC ONLY - NOT A ROM INSTALLER') {
         throw "Package status marker is missing."
     }
 
