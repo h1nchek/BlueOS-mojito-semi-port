@@ -50,3 +50,25 @@ modify \`vbmeta\`, delete logical partitions, or format \`/data\`.
 
 - BlueOS: https://github.com/GDmio/BlueOS
 - Upstream GSI guide: https://github.com/GDmio/BlueOS/blob/main/GSI.md
+
+
+## Recovery ZIP layout preview
+
+The \`recovery/\` directory now contains the planned Android recovery ZIP
+metadata layout. Its \`update-binary\` is an **abort-only guard**: it prints
+that the package is not installable and exits before any device operation.
+
+Build a layout-preview ZIP on Windows from the repository root:
+
+\`\`\`powershell
+powershell -ExecutionPolicy Bypass -File .\\tools\\build_preview_zip.ps1
+\`\`\`
+
+Output:
+\`build/BlueOS-mojito-PREVIEW-NOT-FLASHABLE.zip\`
+
+**Do not treat this preview as a ROM installer.** It contains no GSI image,
+does not write partitions, and is expected to fail installation deliberately.
+The Android OTA package format uses an executable
+\`META-INF/com/google/android/update-binary\`; see the
+[Android Open Source Project package description](https://source.android.com/docs/core/ota/nonab/inside_packages).
