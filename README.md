@@ -1,56 +1,62 @@
 # BlueOS semi-port for Redmi Note 10
 
-**Status: research / bring-up — not a usable ROM yet.**
+**Status: device bring-up / Android 17 tree adaptation — not a bootable ROM yet.**
 
-An experimental effort to investigate adapting the BlueOS Android 17 GSI to the
-Xiaomi Redmi Note 10 (**mojito**, product family **sunny**).
+An experimental effort to adapt BlueOS (Android 17) for the Xiaomi Redmi Note 10
+(**mojito**, product family **sunny**).
 
 - Upstream project: [GDmio/BlueOS](https://github.com/GDmio/BlueOS)
-- Upstream GSI guide: [GSI.md](https://github.com/GDmio/BlueOS/blob/main/GSI.md)
 - Target device: Xiaomi Redmi Note 10 (Snapdragon 678), codename `mojito`
 - Product identifier reported by fastboot: `sunny`
 
-This repository is **not** an official BlueOS port, does not contain a bootable
-image, and does not claim that the upstream GSI is compatible with this device.
+This repository is not an official BlueOS port and does not contain a bootable
+image. The previous generic-image experiments returned to Fastboot; their cause
+has not been established. We are moving toward the upstream-supported
+LineageOS 24.0 device-build route rather than repeating unverified flash steps.
 
-## What “semi-port” means here
+## Engineering direction
 
-The starting point is the existing generic system image. The work is to identify
-which device-specific configuration, overlays, properties, init rules and
-vendor-interface adjustments (if any) are actually needed for this phone.
+BlueOS upstream is based on LineageOS 24.0. Its porting guide requires a working
+device tree, kernel and proprietary vendor files for a conventional device port.
 
-A GSI replaces the Android system image; it does not replace the device's kernel,
-vendor implementation, modem firmware or other hardware-specific components.
-A successful flash is not proof that the system will boot or that hardware works.
+A public Android 15 mojito device tree is available:
+[ProjectEverest-Devices/android_device_xiaomi_mojito](https://github.com/ProjectEverest-Devices/android_device_xiaomi_mojito/tree/15).
+A LineageOS 24.0 shared sm6150 common tree also exists:
+[LineageOS/android_device_xiaomi_sm6150-common](https://github.com/LineageOS/android_device_xiaomi_sm6150-common/tree/lineage-24.0).
+
+The Android 15 device tree is a starting point only; it is not being treated as
+compatible with Android 17 without a forward-port and build validation.
 
 ## Current status
 
-- [x] Repository and research structure created
-- [x] Upstream GSI documentation and attribution requirements reviewed
-- [ ] Record exact stock / current ROM baseline and firmware version
-- [ ] Collect device properties and partition / Treble information
-- [ ] Inspect upstream GSI build details and compatibility
-- [ ] Identify required device-side changes from logs and evidence
-- [ ] Validate boot and hardware functions before any release
+- [x] Repository and upstream licensing / attribution review
+- [x] Redmi Note 10 identity and initial runtime baseline recorded
+- [x] Android 15 mojito device-tree candidate identified
+- [x] LineageOS 24.0 sm6150 common tree identified
+- [ ] Forward-port mojito-specific tree to LineageOS 24.0
+- [ ] Verify kernel source, defconfig and build compatibility
+- [ ] Verify vendor blob source and extraction baseline
+- [ ] Build and boot plain LineageOS 24.0
+- [ ] Integrate BlueOS and build the device package
+- [ ] Validate hardware and publish only after successful testing
 
-See [device notes](docs/DEVICE.md), [roadmap](docs/ROADMAP.md) and
-[upstream notes](docs/UPSTREAM.md).
+See [device notes](docs/DEVICE.md), [device-tree audit](docs/DEVICE_TREE_AUDIT.md),
+[compatibility notes](docs/COMPATIBILITY.md) and [roadmap](docs/ROADMAP.md).
 
 ## Safety and testing
 
-Do not flash experimental images on a primary phone. Keep a known-good stock
-firmware package and a recovery route for the exact device variant. Back up
-important data before any operation that can erase partitions or userdata.
-Never relock the bootloader while running an unofficial system.
+Do not repeat partition deletion or in-place flashing experiments without a
+verified installation plan and recovery path. Keep known-good firmware for the
+exact device variant and back up important data before any operation that can
+erase userdata. Never relock the bootloader while running an unofficial system.
 
-No flash scripts are provided at this stage. Any future installation guide must
-be based on verified device-specific information, not assumptions.
+No destructive flash scripts are provided.
 
 ## Attribution and license
 
 This project uses and investigates BlueOS by GDmio. See [LICENSE](LICENSE)
-and [NOTICE](NOTICE); the upstream attribution condition must be preserved.
-BlueOS upstream: https://github.com/GDmio/BlueOS
+and [NOTICE](NOTICE); preserve the upstream attribution condition when
+redistributing derivatives. BlueOS upstream: https://github.com/GDmio/BlueOS
 
 This repository does not include proprietary Xiaomi firmware, vendor blobs,
 Google applications, or Blue Archive assets.
