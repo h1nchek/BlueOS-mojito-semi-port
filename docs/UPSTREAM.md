@@ -33,3 +33,17 @@ original project. See the copied [LICENSE](../LICENSE) and [NOTICE](../NOTICE).
 
 Do not assume that this license covers third-party components, proprietary
 device files, fonts or other assets. Check each component's own terms.
+
+
+## GSI prerequisites and test coverage
+
+The current upstream GSI guide requires:
+- ro.treble.enabled=true;
+- ro.product.cpu.abi=arm64-v8a;
+- ro.boot.dynamic_partitions=true;
+- firmware based on Android 13 or newer;
+- an unlocked bootloader.
+
+The guide reports testing only on a Pixel 6a through DSU. It explicitly says that the in-place fastboot installation method has not been tested on a real phone. It also warns that Xiaomi devices can have hardware compatibility problems.
+
+For the Redmi Note 10 project, these upstream checks must be compared with properties collected from the currently working ROM. Do not assume that the requirements are satisfied solely because a previous custom ROM booted.
