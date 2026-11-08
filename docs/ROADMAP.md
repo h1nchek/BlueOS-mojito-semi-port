@@ -1,38 +1,39 @@
 # Roadmap
 
-This is an evidence-first bring-up plan. A stage is not complete merely because
-a command returned success.
+The target is a reproducible BlueOS device build for Redmi Note 10 (mojito),
+based on LineageOS 24.0 / Android 17. Do not treat a GSI flash as a device port.
 
-## Stage 1 — Establish a baseline
-- [ ] Confirm exact Redmi Note 10 model and variant.
-- [ ] Record ROM, Android release, firmware and vendor versions.
-- [ ] Capture relevant read-only properties and partition metadata.
-- [ ] Confirm the exact upstream GSI release, checksum and image type.
+## Stage 1 — Source baseline
+- [x] Review BlueOS upstream porting and building requirements.
+- [x] Identify public Android 15 mojito device-tree candidate.
+- [x] Identify LineageOS 24.0 sm6150 shared common tree.
+- [x] Record initial device runtime properties.
+- [ ] Identify exact kernel repository / branch and verify it builds for the target.
+- [ ] Identify matching vendor source / extraction baseline and licensing.
+- [ ] Resolve the mismatch between vendor fingerprint Android 12 string and API 34 properties.
 
-## Stage 2 — Understand the image and interfaces
-- [ ] Review upstream GSI build configuration and TrebleDroid base.
-- [ ] Determine Android framework / vendor interface expectations.
-- [ ] Compare device VINTF manifests and compatibility matrices.
-- [ ] Inventory relevant overlays, init services and properties.
-- [ ] Identify whether the issue is reproducible through a supported test
-      method and collect useful logs.
+## Stage 2 — Forward-port device tree
+- [ ] Compare Android 15 mojito tree with LineageOS 24.0 common tree.
+- [ ] Update product makefiles, BoardConfig, dependencies and namespaces.
+- [ ] Port only required init, sepolicy, overlays and device-specific configuration.
+- [ ] Keep proprietary blobs out of the public repository unless redistribution is permitted.
+- [ ] Make the device tree pass product configuration / Soong checks.
 
-## Stage 3 — Minimal adaptation
-- [ ] Make only changes supported by collected evidence.
-- [ ] Keep each change isolated and documented.
-- [ ] Do not bundle proprietary files without clear provenance and redistribution
-      permission.
-- [ ] Do not add destructive flashing automation.
+## Stage 3 — Establish a plain LineageOS 24.0 build
+- [ ] Set up a supported Linux build environment with sufficient SSD space and memory / swap.
+- [ ] Sync LineageOS 24.0 and required device, common, kernel and vendor sources.
+- [ ] Complete a reproducible build of plain LineageOS.
+- [ ] Boot and validate the plain build before adding BlueOS.
 
-## Stage 4 — Validation
-- [ ] Confirm Android reaches setup and remains stable across reboot.
+## Stage 4 — Integrate BlueOS
+- [ ] Add the upstream BlueOS manifest at a pinned revision.
+- [ ] Apply BlueOS patches and resolve any patch conflicts.
+- [ ] Build the device-specific BlueOS package.
+- [ ] Record build environment, source revisions and checksums.
+
+## Stage 5 — Validation and release
+- [ ] Confirm setup wizard, repeated boots and basic stability.
 - [ ] Test display, touch, Wi-Fi, mobile data, audio, camera, fingerprint,
       Bluetooth, GPS, sensors, calls and charging.
-- [ ] Review SELinux denials and relevant service crashes.
-- [ ] Document known issues and tested firmware baseline.
-
-## Stage 5 — Release (only after validation)
-- [ ] Publish reproducible build or adaptation instructions.
-- [ ] Publish checksums and a clear tested-device statement.
-- [ ] Include recovery instructions for the exact model.
-- [ ] Preserve BlueOS license and attribution notices.
+- [ ] Review SELinux denials and service crashes.
+- [ ] Publish tested firmware baseline, known issues and recovery instructions.
