@@ -1,0 +1,11 @@
+#!/sbin/sh
+# BlueOS mojito: preview package only.
+# This entrypoint intentionally performs NO device modifications.
+
+echo " "
+echo "BlueOS for mojito - PREVIEW PACKAGE"
+echo "This ZIP is NOT an installer."
+echo "No partitions will be changed."
+echo "Recovery layout and device compatibility are not verified yet."
+echo " "
+exit 1
