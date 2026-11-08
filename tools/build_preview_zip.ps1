@@ -4,26 +4,30 @@ param(
 
 $ErrorActionPreference = "Stop"
 Add-Type -AssemblyName System.IO.Compression
-Add-Type -AssemblyName System.IO.Compression.FileSystem
 
 $root = Split-Path -Parent $PSScriptRoot
+
+# Source paths in the repository are deliberately mapped to conventional
+# recovery ZIP paths. Keep the diagnostic package non-installing.
 $files = @(
-    "recovery\META-INF\com\google\android\update-binary",
-    "recovery\META-INF\com\google\android\updater-script",
-    "recovery\PACKAGE-STATUS.txt",
-    "installer\README.md"
+    @{ Source = "recovery\META-INF\com\google\android\update-binary"; Entry = "META-INF/com/google/android/update-binary" },
+    @{ Source = "recovery\META-INF\com\google\android\updater-script"; Entry = "META-INF/com/google/android/updater-script" },
+    @{ Source = "recovery\PACKAGE-STATUS.txt"; Entry = "PACKAGE-STATUS.txt" },
+    @{ Source = "installer\README.md"; Entry = "README.txt" }
 )
 
-foreach ($relative in $files) {
-    $full = Join-Path $root $relative
+foreach ($file in $files) {
+    $full = Join-Path $root $file.Source
     if (-not (Test-Path -LiteralPath $full -PathType Leaf)) {
-        throw "Required package file is missing: $relative"
+        throw "Required package file is missing: $($file.Source)"
     }
 }
 
 $outputPath = [System.IO.Path]::GetFullPath($Output)
 $outputDir = Split-Path -Parent $outputPath
-New-Item -ItemType Directory -Force -Path $outputDir | Out-Null
+if (-not (Test-Path -LiteralPath $outputDir)) {
+    New-Item -ItemType Directory -Force -Path $outputDir | Out-Null
+}
 
 if (Test-Path -LiteralPath $outputPath) {
     Remove-Item -LiteralPath $outputPath -Force
@@ -37,16 +41,20 @@ try {
         $false
     )
     try {
-        foreach ($relative in $files) {
-            $entryName = $relative.Replace("\", "/")
-            $entry = $archive.CreateEntry($entryName, [System.IO.Compression.CompressionLevel]::Optimal)
-            if ($entryName.EndsWith("/update-binary")) {
+        foreach ($file in $files) {
+            $entry = $archive.CreateEntry(
+                $file.Entry,
+                [System.IO.Compression.CompressionLevel]::Optimal
+            )
+
+            if ($file.Entry -eq "META-INF/com/google/android/update-binary") {
                 # Unix regular file with executable permissions (0755).
                 $entry.ExternalAttributes = -2115174400
             }
+
             $entryStream = $entry.Open()
             try {
-                $bytes = [System.IO.File]::ReadAllBytes((Join-Path $root $relative))
+                $bytes = [System.IO.File]::ReadAllBytes((Join-Path $root $file.Source))
                 $entryStream.Write($bytes, 0, $bytes.Length)
             }
             finally {
@@ -62,5 +70,6 @@ finally {
     $stream.Dispose()
 }
 
-Write-Host "Created preview ZIP: $outputPath"
+Write-Host "Created diagnostic ZIP: $outputPath"
+Write-Host "ZIP entries use recovery-root paths (META-INF/ and README.txt)."
 Write-Host "This package runs read-only recovery diagnostics only; it does not install BlueOS."
