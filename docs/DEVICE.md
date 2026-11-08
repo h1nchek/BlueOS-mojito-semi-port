@@ -70,3 +70,22 @@ information such as network names, installed apps and account-related details.
 Each proposed change must cite the evidence that motivates it. Avoid copying
 configuration from a different Xiaomi device merely because its codename looks
 similar.
+
+
+## Preliminary compatibility research (2026-11-08)
+
+A public Redmi Note 10 device tree was inspected:
+- https://github.com/VoltageOS-Devices/android_device_xiaomi_mojito
+- https://github.com/VoltageOS-Devices/android_device_xiaomi_sm6150-common/blob/12/BoardConfigCommon.mk
+
+The device tree identifies mojito and accepts mojito,sunny as OTA device assertions. Its board configuration enables A/B OTA and lists logical partitions including product, system, system_ext, vendor and odm. The shared configuration declares a dynamic-partition group and a super partition size of 9,126,805,504 bytes. This matches the super size previously reported by fastboot during this project's tests.
+
+Important limitation: the inspected shared configuration is on branch 12 and is a build configuration, not a dump of the exact firmware currently installed on this phone. It does not prove the current slot layout, available free space, VNDK compatibility, or the exact reason the GSI boot attempt failed.
+
+The same device tree's dependency manifest points to a separate shared sm6150-common tree, kernel and proprietary vendor repositories. Device support is not contained in the mojito device tree alone.
+
+### Interpretation of previous fastboot attempts
+
+The previous attempts used the in-place fastboot GSI method and both returned to Fastboot after the Xiaomi splash screen. Upstream explicitly marks that installation method as untested on a real phone. Therefore, the result is not enough to identify a specific cause.
+
+Do not infer that deleting product is a required permanent device configuration. It was a space workaround in the upstream guide; partition changes must not be repeated without checking the exact active slot, logical partition metadata and recovery path.
