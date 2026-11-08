@@ -72,3 +72,14 @@ does not write partitions, and is expected to fail installation deliberately.
 The Android OTA package format uses an executable
 \`META-INF/com/google/android/update-binary\`; see the
 [Android Open Source Project package description](https://source.android.com/docs/core/ota/nonab/inside_packages).
+
+
+Validate the generated preview archive:
+
+\`\`\`powershell
+powershell -ExecutionPolicy Bypass -File .\\tools\\test_preview_zip.ps1
+\`\`\`
+
+The test checks the required ZIP entries, confirms that no image payload is
+bundled, and verifies that the recovery entrypoint is marked to abort. It
+does not emulate TWRP or prove device compatibility.
