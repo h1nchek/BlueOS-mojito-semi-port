@@ -89,3 +89,29 @@ The same device tree's dependency manifest points to a separate shared sm6150-co
 The previous attempts used the in-place fastboot GSI method and both returned to Fastboot after the Xiaomi splash screen. Upstream explicitly marks that installation method as untested on a real phone. Therefore, the result is not enough to identify a specific cause.
 
 Do not infer that deleting product is a required permanent device configuration. It was a space workaround in the upstream guide; partition changes must not be repeated without checking the exact active slot, logical partition metadata and recovery path.
+
+
+## User-reported runtime baseline (2026-11-08)
+
+Collected from the currently booted Evolution X system using adb:
+
+| Property | Value |
+|---|---|
+| ro.product.device | sunny |
+| ro.build.version.release | 14 |
+| ro.build.version.sdk | 34 |
+| ro.vendor.build.fingerprint | Redmi/sunny_global/sunny:12/RKQ1.210614.002/V14.0.8.0.SKGMIXM:user/release-keys |
+| ro.treble.enabled | true |
+| ro.product.cpu.abi | arm64-v8a |
+| ro.boot.dynamic_partitions | true |
+| ro.boot.flash.locked | 1 |
+| ro.vndk.version | 34 |
+
+Interpretation:
+- The reported system identifies as Android 14 / API 34.
+- Treble, ARM64 userspace and dynamic partitions satisfy three of the upstream GSI guide's property checks.
+- The vendor fingerprint contains Android release 12 and Xiaomi firmware build V14.0.8.0.SKGMIXM. This suggests an Android 12-era vendor base, despite the Android 14 system. It is a compatibility concern because BlueOS upstream asks for Android 13-or-newer firmware. The fingerprint alone does not prove the precise vendor interface level or explain the failed boot.
+- ro.vndk.version=34 must not be treated by itself as proof that all vendor libraries and interfaces are compatible with Android 17.
+- ro.boot.flash.locked=1 conflicts with the earlier fastboot result unlocked=yes. Resolve this using a fresh fastboot getvar unlocked check; do not infer lock state from this single runtime property.
+
+The first adb command reported no connected devices, but subsequent commands succeeded. This was a transient ADB connection issue and does not affect the returned property values.
