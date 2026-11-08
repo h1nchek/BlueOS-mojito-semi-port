@@ -83,3 +83,24 @@ powershell -ExecutionPolicy Bypass -File .\\tools\\test_preview_zip.ps1
 The test checks the required ZIP entries, confirms that no image payload is
 bundled, and verifies that the recovery entrypoint is marked to abort. It
 does not emulate TWRP or prove device compatibility.
+
+
+## Current diagnostic ZIP
+
+The ZIP is a read-only TWRP diagnostic, not a ROM installer. It records
+recovery properties, block-device links, mapper entries, and available
+inspection tools in `/tmp/blueos-recovery-report.txt`. It does not modify
+partitions or install the GSI.
+
+Build and validate from the repository root:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\\tools\\build_preview_zip.ps1
+powershell -ExecutionPolicy Bypass -File .\\tools\\test_preview_zip.ps1
+```
+
+After running the diagnostic ZIP in TWRP, retrieve the report over ADB:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\\tools\\pull_recovery_report.ps1
+```
