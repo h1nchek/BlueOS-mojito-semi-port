@@ -14,7 +14,7 @@ try {
         "META-INF/com/google/android/update-binary",
         "META-INF/com/google/android/updater-script",
         "PACKAGE-STATUS.txt",
-        "installer/README.md"
+        "README.txt"
     )
 
     $names = @($archive.Entries | ForEach-Object { $_.FullName })
@@ -37,8 +37,8 @@ try {
     try { $binaryText = $reader.ReadToEnd() }
     finally { $reader.Dispose() }
 
-    if ($binaryText -notmatch '(?m)^exit\s+1\s*$') {
-        throw "Recovery entrypoint does not contain the expected abort exit."
+    if ($binaryText -notmatch 'READ-ONLY RECOVERY DIAGNOSTIC') {
+        throw "Recovery entrypoint is not marked as a read-only diagnostic."
     }
     if ($binaryText -match '(?i)\b(flash|dd|mkfs|wipe|format|delete_partition|fastboot)\b') {
         throw "Unexpected device-operation keyword found in preview entrypoint."
@@ -55,8 +55,8 @@ try {
 
     Write-Host "PASS: required ZIP entries are present."
     Write-Host "PASS: no image or nested ZIP payload is included."
-    Write-Host "PASS: recovery entrypoint is abort-only."
-    Write-Host "PASS: package is clearly marked as not flashable."
+    Write-Host "PASS: recovery entrypoint is a read-only diagnostic."
+    Write-Host "PASS: package is clearly marked as diagnostic-only, not flashable."
 }
 finally {
     $archive.Dispose()
