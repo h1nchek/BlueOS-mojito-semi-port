@@ -1,31 +1,28 @@
 # BlueOS semi-port for Redmi Note 10
 
-**Status: device bring-up / Android 17 tree adaptation — not a bootable ROM yet.**
+**Status: not build-ready — device-tree forward-port and source integration are still missing.**
 
-An experimental effort to adapt BlueOS (Android 17) for the Xiaomi Redmi Note 10
-(**mojito**, product family **sunny**).
+An experimental effort to adapt BlueOS (LineageOS 24.0 / Android 17) for the Xiaomi Redmi Note 10 (**mojito**, product family **sunny**).
 
 - Upstream project: [GDmio/BlueOS](https://github.com/GDmio/BlueOS)
 - Target device: Xiaomi Redmi Note 10 (Snapdragon 678), codename `mojito`
 - Product identifier reported by fastboot: `sunny`
 
-This repository is not an official BlueOS port and does not contain a bootable
-image. The previous generic-image experiments returned to Fastboot; their cause
-has not been established. We are moving toward the upstream-supported
-LineageOS 24.0 device-build route rather than repeating unverified flash steps.
+This repository is a research and preparation repository, **not an Android source checkout and not a compilable ROM tree**. It currently contains documentation, read-only diagnostics and preview-package scripts. It does not contain a LineageOS manifest checkout, a completed LineageOS 24.0 device tree, a validated kernel integration, or matching vendor files. No successful Android build has been performed.
+
+## Build-readiness blockers
+
+1. The public mojito device-tree candidate is on Android 15; it has not been forward-ported or validated against LineageOS 24.0 / Android 17.
+2. The candidate's `BoardConfig.mk` selects `kernel/xiaomi/mojito`, while the inspected LineageOS 24.0 sm6150 common dependency manifest requests a kernel checkout at `kernel/xiaomi/sm6150`. These paths must be reconciled before creating a local manifest.
+3. A matching kernel branch, defconfig and vendor blob baseline have not been proven to build together.
+4. Plain LineageOS 24.0 for mojito has not yet been built and booted. Upstream BlueOS explicitly requires this baseline before adding BlueOS.
+5. The current repository has no tested end-to-end build manifest or CI build.
+
+See [build-readiness audit](docs/BUILD_READINESS_AUDIT.md) for evidence and the exact stop conditions.
 
 ## Engineering direction
 
-BlueOS upstream is based on LineageOS 24.0. Its porting guide requires a working
-device tree, kernel and proprietary vendor files for a conventional device port.
-
-A public Android 15 mojito device tree is available:
-[ProjectEverest-Devices/android_device_xiaomi_mojito](https://github.com/ProjectEverest-Devices/android_device_xiaomi_mojito/tree/15).
-A LineageOS 24.0 shared sm6150 common tree also exists:
-[LineageOS/android_device_xiaomi_sm6150-common](https://github.com/LineageOS/android_device_xiaomi_sm6150-common/tree/lineage-24.0).
-
-The Android 15 device tree is a starting point only; it is not being treated as
-compatible with Android 17 without a forward-port and build validation.
+The intended route is a conventional device build on LineageOS 24.0, then integration of upstream `vendor/blueos` using the hook documented by BlueOS. The Android 15 mojito tree is a starting point only; it is not treated as compatible with Android 17 without a forward-port and build validation.
 
 ## Current status
 
@@ -33,15 +30,15 @@ compatible with Android 17 without a forward-port and build validation.
 - [x] Redmi Note 10 identity and initial runtime baseline recorded
 - [x] Android 15 mojito device-tree candidate identified
 - [x] LineageOS 24.0 sm6150 common tree identified
+- [x] Initial build-readiness audit and blocker list
+- [ ] Reconcile device/common kernel source paths and dependency manifests
 - [ ] Forward-port mojito-specific tree to LineageOS 24.0
 - [ ] Verify kernel source, defconfig and build compatibility
 - [ ] Verify vendor blob source and extraction baseline
 - [ ] Build and boot plain LineageOS 24.0
-- [ ] Integrate BlueOS and build the device package
+- [ ] Integrate BlueOS at a pinned upstream revision
+- [ ] Run BlueOS patch checks and build the device package
 - [ ] Validate hardware and publish only after successful testing
-
-See [device notes](docs/DEVICE.md), [device-tree audit](docs/DEVICE_TREE_AUDIT.md),
-[compatibility notes](docs/COMPATIBILITY.md) and [roadmap](docs/ROADMAP.md).
 
 ## Safety and testing
 
